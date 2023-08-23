@@ -387,6 +387,7 @@
       "Cannot write after close. Assign an onready handler.");
     if (chunk === null) return end(parser);
     var i = 0, c = chunk.charCodeAt(0), p = parser.p;
+    var lockIncrements = false;
     if (clarinet.DEBUG) console.log('write -> [' + chunk + ']');
     while (c) {
       p = c;
@@ -401,11 +402,15 @@
       if(!c) break;
 
       if (clarinet.DEBUG) console.log(i,c,clarinet.STATE[parser.state]);
-      parser.position ++;
-      if (c === Char.lineFeed) {
-        parser.line ++;
-        parser.column = 0;
-      } else parser.column ++;
+      if (!lockIncrements) {
+        parser.position ++;
+        if (c === Char.lineFeed) {
+          parser.line ++;
+          parser.column = 0;
+        } else parser.column ++;
+      } else {
+        lockIncrements = false;
+      }
       switch (parser.state) {
 
         case S.BEGIN:
@@ -666,6 +671,7 @@
           } else {
             closeNumber(parser);
             i--; // go back one
+            lockIncrements = true; // do not apply increments for a single cycle
             parser.state = parser.stack.pop() || S.VALUE;
           }
         continue;

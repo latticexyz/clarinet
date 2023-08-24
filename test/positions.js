@@ -22,4 +22,19 @@ describe('clarinet', function(){
       });
     });
   });
+  describe('#line number', function() {
+    it('should be able to correctly track the line number', function (done){
+      fs.readFile('test/numeric.json', 'utf8', function (err,data) {
+        if (err) {
+          done(err);
+        }
+        parser.onend = function() {
+          assert.equal(16, this.line);
+        };
+        parser.write(data);
+        parser.close();
+        done();
+      });
+    });
+  });
 });
